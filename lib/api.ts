@@ -4,14 +4,33 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7860";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || body.message || `Request failed (${res.status})`);
+    let detail = `Request failed (${res.status})`;
+    try {
+      const body = await res.json();
+      if (typeof body.detail === "string") detail = body.detail;
+      else if (Array.isArray(body.detail)) detail = body.detail.map((d: { msg?: string }) => d.msg).join(", ");
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new Error(detail);
   }
   return res.json();
 }
 
+async function apiFetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch {
+    throw new Error(
+      "Cannot reach the backend API. Ensure it is running at " +
+        API_BASE +
+        " (run start-local.ps1 in the backend folder)."
+    );
+  }
+}
+
 export async function recordConsent(): Promise<ConsentResponse> {
-  const res = await fetch(`${API_BASE}/api/consent`, {
+  const res = await apiFetch(`${API_BASE}/api/consent`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ accepted: true }),
@@ -27,7 +46,7 @@ export async function analyzeAudio(
   form.append("audio", audioFile);
   form.append("session_id", sessionId);
 
-  const res = await fetch(`${API_BASE}/api/analyze`, {
+  const res = await apiFetch(`${API_BASE}/api/analyze`, {
     method: "POST",
     body: form,
   });
@@ -35,12 +54,12 @@ export async function analyzeAudio(
 }
 
 export async function getResults(sessionId: string): Promise<ScoringResult> {
-  const res = await fetch(`${API_BASE}/api/results/${sessionId}`);
+  const res = await apiFetch(`${API_BASE}/api/results/${sessionId}`);
   return handleResponse<ScoringResult>(res);
 }
 
 export async function deleteResults(sessionId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/results/${sessionId}`, {
+  const res = await apiFetch(`${API_BASE}/api/results/${sessionId}`, {
     method: "DELETE",
   });
   if (!res.ok && res.status !== 204) {
@@ -50,7 +69,7 @@ export async function deleteResults(sessionId: string): Promise<void> {
 }
 
 export async function checkHealth(): Promise<{ status: string; models_loaded: boolean }> {
-  const res = await fetch(`${API_BASE}/api/health`);
+  const res = await apiFetch(`${API_BASE}/api/health`);
   return handleResponse(res);
 }
 

@@ -168,7 +168,7 @@ export default function Recorder({ disabled, onRecordingReady, onError }: Record
         <input
           ref={fileInputRef}
           type="file"
-          accept="audio/wav,audio/mpeg,audio/mp4,audio/webm,audio/ogg,.wav,.mp3,.m4a,.webm"
+          accept="audio/wav,audio/mpeg,audio/mp4,audio/webm,audio/ogg,audio/opus,.wav,.mp3,.m4a,.webm,.ogg,.opus"
           className="hidden"
           onChange={handleFileUpload}
         />
