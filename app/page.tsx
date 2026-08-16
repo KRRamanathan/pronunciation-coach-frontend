@@ -38,9 +38,23 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await analyzeAudio(sessionId, audioFile);
-      sessionStorage.setItem(`audio-${result.session_id}`, URL.createObjectURL(audioFile));
-      router.push(`/results/${result.session_id}`);
+      let activeSession = sessionId;
+      try {
+        const result = await analyzeAudio(activeSession, audioFile);
+        sessionStorage.setItem(`audio-${result.session_id}`, URL.createObjectURL(audioFile));
+        router.push(`/results/${result.session_id}`);
+        return;
+      } catch (first) {
+        const msg = first instanceof Error ? first.message : "";
+        // Backend SQLite wiped on Render restart — refresh consent and retry once.
+        if (!/consent|403|Forbidden/i.test(msg)) throw first;
+        const res = await recordConsent();
+        activeSession = res.session_id;
+        setSessionId(activeSession);
+        const result = await analyzeAudio(activeSession, audioFile);
+        sessionStorage.setItem(`audio-${result.session_id}`, URL.createObjectURL(audioFile));
+        router.push(`/results/${result.session_id}`);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Analysis failed.");
     } finally {
