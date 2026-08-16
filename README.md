@@ -22,7 +22,7 @@ Open [http://localhost:3000](http://localhost:3000). Ensure the backend is runni
 1. Push this repo to GitHub.
 2. Import project in [vercel.com](https://vercel.com).
 3. Set environment variable:
-   - `NEXT_PUBLIC_API_URL` = your Hugging Face Space URL (e.g. `https://user-pronunciation-coach.hf.space`)
+   - `NEXT_PUBLIC_API_URL` = your Render backend URL (e.g. `https://pronunciation-coach-api.onrender.com`)
 4. Deploy.
 
 ## Features
