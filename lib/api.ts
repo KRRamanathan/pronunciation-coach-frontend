@@ -17,17 +17,32 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json();
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Retry on network failures — Render free cold starts often drop the first request. */
 async function apiFetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
-  try {
-    return await fetch(input, init);
-  } catch {
-    throw new Error(
-      "Cannot reach the backend API at " +
-        API_BASE +
-        ". If the Render service just woke up, wait ~30s and try again. " +
-        "Also open the site at https://pronunciation-coach-frontend.vercel.app (not a preview URL)."
-    );
+  const attempts = 4;
+  let lastError: unknown;
+
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fetch(input, init);
+    } catch (err) {
+      lastError = err;
+      if (i < attempts - 1) {
+        await sleep(2000 * (i + 1)); // 2s, 4s, 6s
+      }
+    }
   }
+
+  throw new Error(
+    "Cannot reach the backend API at " +
+      API_BASE +
+      ". The free Render service may be waking up — wait about a minute and try again. " +
+      "Use https://pronunciation-coach-frontend.vercel.app"
+  );
 }
 
 export async function recordConsent(): Promise<ConsentResponse> {
