@@ -22,9 +22,10 @@ async function apiFetch(input: RequestInfo, init?: RequestInit): Promise<Respons
     return await fetch(input, init);
   } catch {
     throw new Error(
-      "Cannot reach the backend API. Ensure it is running at " +
+      "Cannot reach the backend API at " +
         API_BASE +
-        " (run start-local.ps1 in the backend folder)."
+        ". If the Render service just woke up, wait ~30s and try again. " +
+        "Also open the site at https://pronunciation-coach-frontend.vercel.app (not a preview URL)."
     );
   }
 }
