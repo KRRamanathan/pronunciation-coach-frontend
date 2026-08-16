@@ -76,12 +76,12 @@ export default function HomePage() {
             Improve Your English Pronunciation
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-gray-600">
-            Record or upload 30–45 seconds of English speech. Get an overall score plus
-            word-by-word feedback — powered entirely by open-source models, no paid APIs.
+            Record or upload up to 3 minutes of English speech and get an overall score plus
+            clear, word-by-word feedback you can practice with.
           </p>
           {apiStatus === "down" && (
             <p className="mt-3 text-sm text-red-600">
-              Backend unavailable. Ensure the API is deployed and NEXT_PUBLIC_API_URL is set.
+              We&apos;re waking up the scoring service — wait a moment and refresh.
             </p>
           )}
         </section>
@@ -132,9 +132,9 @@ export default function HomePage() {
         )}
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <Feature icon="🔒" title="Privacy First" desc="Raw audio never stored. Random session ID only." />
-          <Feature icon="🆓" title="Zero Cost" desc="No API keys or credit card required." />
-          <Feature icon="📊" title="Word-Level" desc="See exactly which words need work and why." />
+          <Feature icon="🔒" title="Private" desc="Your audio is scored and then discarded — nothing personal is kept." />
+          <Feature icon="✨" title="Clear feedback" desc="See which words need work and how to improve them." />
+          <Feature icon="📊" title="Word by word" desc="Follow along with highlights as you review your recording." />
         </section>
       </div>
     </>

@@ -30,8 +30,8 @@ export default function ConsentModal({ open, onAccept, onDecline }: ConsentModal
 
         <div className="mt-4 space-y-3 text-sm leading-relaxed text-gray-700">
           <p>
-            <strong>What we collect:</strong> A 30–45 second audio clip of your English speech,
-            processed in real time for pronunciation scoring.
+            <strong>What we collect:</strong> Up to 3 minutes of your English speech,
+            processed for pronunciation scoring.
           </p>
           <p>
             <strong>Why:</strong> To analyze your pronunciation and provide word-level feedback.
@@ -51,9 +51,8 @@ export default function ConsentModal({ open, onAccept, onDecline }: ConsentModal
             personally identifiable information.
           </p>
           <p>
-            <strong>Data residency:</strong> Processing occurs on our self-hosted infrastructure
-            (Hugging Face Spaces). Structured results are stored in Supabase (Mumbai region).
-            No third parties receive your audio or transcript.
+            <strong>Privacy:</strong> Your recording is processed for scoring only. Results are
+            stored securely and are not shared with third parties.
           </p>
         </div>
 

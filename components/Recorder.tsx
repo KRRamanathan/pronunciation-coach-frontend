@@ -17,6 +17,7 @@ export default function Recorder({ disabled, onRecordingReady, onError }: Record
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const elapsedRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const stopStream = useCallback(() => {
@@ -31,9 +32,12 @@ export default function Recorder({ disabled, onRecordingReady, onError }: Record
     };
   }, [stopStream]);
 
-  const processFile = async (file: File) => {
+  const processFile = async (file: File, fallbackSeconds?: number) => {
     try {
-      const duration = await getBlobDuration(file);
+      let duration = await getBlobDuration(file);
+      if (!Number.isFinite(duration) || duration <= 0) {
+        duration = fallbackSeconds ?? 0;
+      }
       const check = validateDuration(duration);
       if (!check.valid) {
         onError(check.message!);
@@ -42,6 +46,16 @@ export default function Recorder({ disabled, onRecordingReady, onError }: Record
       setUploadName(file.name);
       onRecordingReady(file);
     } catch {
+      if (fallbackSeconds && Number.isFinite(fallbackSeconds)) {
+        const check = validateDuration(fallbackSeconds);
+        if (check.valid) {
+          setUploadName(file.name);
+          onRecordingReady(file);
+          return;
+        }
+        onError(check.message!);
+        return;
+      }
       onError("Could not validate audio duration.");
     }
   };
@@ -63,19 +77,22 @@ export default function Recorder({ disabled, onRecordingReady, onError }: Record
 
       recorder.onstop = async () => {
         stopStream();
+        const recordedSec = elapsedRef.current;
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const file = new File([blob], `recording-${Date.now()}.webm`, { type: mimeType });
-        await processFile(file);
+        await processFile(file, recordedSec);
       };
 
       recorder.start(250);
       setRecording(true);
       setElapsed(0);
+      elapsedRef.current = 0;
       setUploadName(null);
 
       timerRef.current = window.setInterval(() => {
         setElapsed((prev) => {
           const next = prev + 0.25;
+          elapsedRef.current = next;
           if (next >= MAX_DURATION_SEC) {
             stopRecording();
           }
@@ -117,14 +134,14 @@ export default function Recorder({ disabled, onRecordingReady, onError }: Record
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900">Record or Upload</h3>
       <p className="mt-1 text-sm text-gray-500">
-        Speak for {MIN_DURATION_SEC}–{MAX_DURATION_SEC} seconds in English.
+        Speak for at least {MIN_DURATION_SEC} seconds, up to 3 minutes.
       </p>
 
       {recording && (
         <div className="mt-4">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-red-600">● Recording {elapsed.toFixed(1)}s</span>
-            <span className="text-gray-500">Max {MAX_DURATION_SEC}s</span>
+            <span className="text-gray-500">Max 3 min</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
             <div
